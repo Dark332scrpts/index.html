@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>◼ VIEW SOURCE · visualizador de código moderno</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            background-image: radial-gradient(circle at 15% 30%, #1c1c2a 0%, #07070a 90%);
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            color: #e5e5f0;
+        }
+
+        .glass-master {
+            width: 100%;
+            max-width: 1400px;
+            background: rgba(12, 12, 20, 0.75);
+            backdrop-filter: blur(18px) saturate(200%);
+            -webkit-backdrop-filter: blur(18px) saturate(200%);
+            border: 1px solid rgba(80, 80, 120, 0.25);
+            border-radius: 3rem;
+            padding: 2.2rem 2.5rem;
+            box-shadow: 0 40px 70px -20px #000000dd, inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
+
+        /* cabeçalho */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .title-group h1 {
+            font-weight: 550;
+            font-size: 2.2rem;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #ffffff, #c6c6ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .badge {
+            background: #262636;
+            border: 1px solid #4b4b70;
+            border-radius: 100px;
+            padding: 0.3rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: #bdbdff;
+            letter-spacing: 0.3px;
+        }
+
+        .subinfo {
+            color: #a0a0c0;
+            font-size: 0.95rem;
+            border-left: 2px solid #5d5d8a;
+            padding-left: 1rem;
+        }
+
+        /* input + botao */
+        .fetch-zone {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0 2.5rem 0;
+            flex-wrap: wrap;
+        }
+
+        .input-container {
+            flex: 1 1 350px;
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.4rem;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .input-container input {
+            width: 100%;
+            background: #0b0b15;
+            border: 1.8px solid #2a2a42;
+            border-radius: 60px;
+            padding: 1.2rem 1.5rem 1.2rem 4rem;
+            font-size: 1.2rem;
+            color: white;
+            font-family: 'Inter', monospace;
+            transition: 0.2s;
+            box-shadow: inset 0 5px 12px #00000080;
+        }
+
+        .input-container input:focus {
+            outline: none;
+            border-color: #9a7cff;
+            background: #12121e;
+            box-shadow: 0 0 0 5px rgba(140, 110, 255, 0.15), inset 0 2px 8px black;
+        }
+
+        .input-container input::placeholder {
+            color: #4f4f6f;
+            font-weight: 300;
+        }
+
+        .action-btn {
+            background: linear-gradient(150deg, #25253b, #151523);
+            border: 1px solid #4f4f77;
+            border-radius: 60px;
+            padding: 0 3rem;
+            font-weight: 550;
+            font-size: 1.2rem;
+            color: #efefff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            transition: 0.15s;
+            box-shadow: 0 8px 20px #0000004d;
+            letter-spacing: 0.5px;
+        }
+
+        .action-btn:hover {
+            background: #2f2f4a;
+            border-color: #8a8ad4;
+            transform: scale(1.02);
+            color: white;
+        }
+
+        .action-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* painel de abas refinado */
+        .code-viewer {
+            background: #07070e;
+            border-radius: 2.2rem;
+            border: 1px solid #2b2b44;
+            overflow: hidden;
+            box-shadow: 0 20px 40px -12px black, inset 0 1px 1px #ffffff0c;
+        }
+
+        .tab-header {
+            display: flex;
+            background: #12121f;
+            border-bottom: 1px solid #2d2d48;
+            padding: 0 1.8rem;
+            gap: 2.2rem;
+        }
+
+        .tab {
+            padding: 1.1rem 0.2rem 0.8rem 0.2rem;
+            font-weight: 470;
+            font-size: 1.1rem;
+            color: #a2a2cc;
+            border-bottom: 3px solid transparent;
+            transition: 0.15s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .tab.active {
+            color: white;
+            border-bottom: 3px solid #ad99ff;
+            text-shadow: 0 0 6px #7f6eff;
+        }
+
+        .tab span {
+            font-size: 1.3rem;
+        }
+
+        .code-window {
+            background: #07070e;
+            padding: 1.8rem 2.2rem;
+            max-height: 550px;
+            overflow: auto;
+            font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #dadaf5;
+            scrollbar-width: thin;
+            scrollbar-color: #4a4a70 #1b1b2a;
+        }
+
+        .code-window::-webkit-scrollbar {
+            width: 9px;
+            height: 9px;
+        }
+
+        .code-window::-webkit-scrollbar-track {
+            background: #14141f;
+        }
+
+        .code-window::-webkit-scrollbar-thumb {
+            background: #3d3d62;
+            border-radius: 10px;
+        }
+
+        .placeholder-grace {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            color: #6a6a94;
+            gap: 1.5rem;
+        }
+
+        .big-icon {
+            font-size: 4rem;
+            opacity: 0.35;
+        }
+
+        .tag-hint {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .tag-hint span {
+            background: #19192b;
+            border-radius: 40px;
+            padding: 0.3rem 1.2rem;
+            border: 1px solid #3f3f63;
+            font-size: 0.85rem;
+        }
+
+        .loader {
+            width: 36px;
+            height: 36px;
+            border: 4px solid #353558;
+            border-top: 4px solid #bbaaff;
+            border-radius: 50%;
+            animation: spin 1s infinite cubic-bezier(0.6, 0.2, 0.4, 0.8);
+            margin: 2.5rem auto;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .footer-note {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            color: #5a5a82;
+            font-size: 0.8rem;
+        }
+
+        .error-block {
+            background: #2b1723;
+            border: 1px solid #b45f88;
+            border-radius: 60px;
+            padding: 0.8rem 2rem;
+            color: #ffd0dd;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" />
+</head>
+<body>
+<div class="glass-master">
+    <div class="top-bar">
+        <div class="title-group">
+            <h1>◼ view‑source</h1>
+            <span class="badge">page + css + js</span>
+        </div>
+        <div class="subinfo">🔍 código fonte original · sem censura</div>
+    </div>
+
+    <div class="fetch-zone">
+        <div class="input-container">
+            <span class="material-symbols-outlined input-icon">lan</span>
+            <input type="text" id="urlField" placeholder="https://exemplo.com" value="https://example.com">
+        </div>
+        <button class="action-btn" id="fetchButton">
+            <span class="material-symbols-outlined">download</span> VER PAGE SOURCE
+        </button>
+    </div>
+
+    <!-- visualizador com abas -->
+    <div class="code-viewer">
+        <div class="tab-header" id="tabHeaders">
+            <div class="tab active" data-view="html"><span class="material-symbols-outlined">code</span> HTML (fonte)</div>
+            <div class="tab" data-view="css"><span class="material-symbols-outlined">brush</span> CSS</div>
+            <div class="tab" data-view="js"><span class="material-symbols-outlined">data_object</span> JavaScript</div>
+        </div>
+        <div class="code-window" id="codeWindow">
+            <!-- conteúdo será injetado aqui -->
+            <div class="placeholder-grace">
+                <span class="material-symbols-outlined big-icon">inspect</span>
+                <span style="font-size: 1.3rem;">view-source aparecerá aqui</span>
+                <div class="tag-hint">
+                    <span>✦ HTML cru</span>
+                    <span>✦ CSS extraído</span>
+                    <span>✦ JS inline</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-note">
+        <span>⛓️ proxy allorigins · respeita CORS</span>
+        <span>📄 view page source completo</span>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // elementos principais
+        const urlField = document.getElementById('urlField');
+        const fetchBtn = document.getElementById('fetchButton');
+        const codeWindow = document.getElementById('codeWindow');
+        const tabs = document.querySelectorAll('.tab');
+
+        // estado interno
+        let rawHTML = '';              // guarda o HTML puro (fonte)
+        let cssContent = '';           // css inline extraído
+        let jsContent = '';            // js inline extraído
+        let currentView = 'html';       // html, css, js
+        let loading = false;
+
+        // ---- normalizar url
+        const normalize = (str) => {
+            let s = str.trim();
+            if (s === '') return '';
+            if (!s.match(/^https?:\/\//i)) s = 'https://' + s;
+            return s;
+        };
+
+        // ---- ativar aba visualmente
+        const setActiveTab = (view) => {
+            tabs.forEach(t => {
+                const tabView = t.getAttribute('data-view');
+                if (tabView === view) t.classList.add('active');
+                else t.classList.remove('active');
+            });
+        };
+
+        // ---- exibir conteúdo com base na view atual (sempre texto puro, sem interpretação)
+        const renderView = () => {
+            if (loading) return; // se estiver carregando, não sobrescrever
+
+            let displayContent = '';
+            switch (currentView) {
+                case 'html':
+                    displayContent = rawHTML || '<!-- aguardando código fonte -->';
+                    break;
+                case 'css':
+                    displayContent = cssContent || '/* nenhum CSS inline encontrado */';
+                    break;
+                case 'js':
+                    displayContent = jsContent || '/* nenhum JavaScript inline encontrado */';
+                    break;
+                default: displayContent = 'selecione uma aba';
+            }
+
+            // Cria um elemento <pre> para garantir quebra e texto puro (escaped)
+            const pre = document.createElement('pre');
+            pre.style.margin = '0';
+            pre.style.fontFamily = 'inherit';
+            pre.style.whiteSpace = 'pre-wrap';
+            pre.style.wordBreak = 'break-word';
+            pre.style.fontSize = '0.95rem';
+            pre.textContent = displayContent;   // textContent escapa tudo (verdadeiro view-source)
+
+            codeWindow.innerHTML = '';   // limpa
+            codeWindow.appendChild(pre);
+        };
+
+        // ---- extração de CSS e JS a partir do HTML (inline)
+        const extractFromHtml = (html) => {
+            let cssAcc = [];
+            let jsAcc = [];
+
+            // <style> ... </style>
+            const styleTagRegex = /<style(?:\s[^>]*?)?>([\s\S]*?)<\/style>/gi;
+            let styleMatch;
+            while ((styleMatch = styleTagRegex.exec(html)) !== null) {
+                if (styleMatch[1].trim()) cssAcc.push(`/* <style> */\n${styleMatch[1].trim()}`);
+            }
+
+            // <script> sem atributo src (inline)
+            const scriptInlineRegex = /<script(?![^>]*src=["'])(?:\s[^>]*?)?>([\s\S]*?)<\/script>/gi;
+            let scriptMatch;
+            while ((scriptMatch = scriptInlineRegex.exec(html)) !== null) {
+                if (scriptMatch[1].trim()) jsAcc.push(`/* <script> inline */\n${scriptMatch[1].trim()}`);
+            }
+
+            // referências externas (apenas para informação)
+            const linkCssRegex = /<link[^>]*rel=["']stylesheet["'][^>]*href=["']([^"']+)["']/gi;
+            let linkMatch;
+            let cssRefs = [];
+            while ((linkMatch = linkCssRegex.exec(html)) !== null) {
+                cssRefs.push(linkMatch[1]);
+            }
+            if (cssRefs.length) {
+                cssAcc.push(`/* 🔗 CSS externo referenciado: ${cssRefs.join(' · ')} (não incluso por CORS) */`);
+            }
+
+            const scriptSrcRegex = /<script[^>]*src=["']([^"']+)["']/gi;
+            let jsRefs = [];
+            let srcMatch;
+            while ((srcMatch = scriptSrcRegex.exec(html)) !== null) {
+                jsRefs.push(srcMatch[1]);
+            }
+            if (jsRefs.length) {
+                jsAcc.push(`/* 🔗 scripts externos: ${jsRefs.join(' · ')} (apenas referência) */`);
+            }
+
+            cssContent = cssAcc.length ? cssAcc.join('\n\n') : '/* nenhum bloco de CSS encontrado */';
+            jsContent = jsAcc.length ? jsAcc.join('\n\n') : '/* nenhum JavaScript inline encontrado */';
+        };
+
+        // ---- loading state
+        const setLoadingState = (state) => {
+            loading = state;
+            if (state) {
+                codeWindow.innerHTML = `<div class="loader"></div><div style="text-align:center; color:#6f6f9f;">carregando view‑source ...</div>`;
+            }
+        };
+
+        // ---- mostrar erro amigável
+        const showErrorMsg = (msg) => {
+            codeWindow.innerHTML = `<div class="placeholder-grace error-block"><span class="material-symbols-outlined">warning</span> ${msg}</div>`;
+        };
+
+        // ---- busca via proxy (allorigins) -> obtém HTML puro
+        const fetchPageSource = async () => {
+            const rawUrl = urlField.value;
+            const cleanUrl = normalize(rawUrl);
+            if (!cleanUrl) {
+                showErrorMsg('digite uma URL válida');
+                return;
+            }
+
+            setLoadingState(true);
+            rawHTML = '';
+            cssContent = '';
+            jsContent = '';
+
+            try {
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(cleanUrl)}`;
+                const resp = await fetch(proxyUrl);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+                const data = await resp.json();
+                if (data && data.contents) {
+                    rawHTML = data.contents;   // HTML puro!
+                    extractFromHtml(rawHTML);    // extrai css / js inline
+                    currentView = 'html';         // volta pra aba html
+                    setActiveTab('html');
+                    renderView();
+                } else {
+                    throw new Error('proxy retornou vazio');
+                }
+            } catch (err) {
+                console.warn(err);
+                showErrorMsg(`erro ao buscar: ${err.message || 'falha na conexão'}`);
+                rawHTML = '';
+                cssContent = '';
+                jsContent = '';
+                renderView(); // mostra vazio
+            } finally {
+                loading = false;
+            }
+        };
+
+        // ---- listeners das abas
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const view = tab.getAttribute('data-view');
+                if (!view) return;
+                currentView = view;
+                setActiveTab(view);
+                renderView();
+            });
+        });
+
+        // ---- botão e Enter
+        fetchBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            fetchPageSource();
+        });
+
+        urlField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                fetchBtn.click();
+            }
+        });
+
+        // ---- carregar exemplo inicial
+        window.addEventListener('load', () => {
+            fetchPageSource();
+        });
+    })();
+</script>
+</body>
+</html>
