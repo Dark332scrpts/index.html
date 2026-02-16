@@ -1,2 +1,1 @@
-# View-Page-source-
-View parte source
+Este é um visualizador de código fonte elegante e funcional que permite aos usuários inspecionar o HTML, CSS e JavaScript de qualquer site diretamente no navegador. Com uma interface escura e moderna, a ferramenta oferece uma experiência sofisticada para desenvolvedores, estudantes e curiosos que desejam analisar a estrutura de páginas web.
